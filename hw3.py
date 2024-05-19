@@ -18,14 +18,52 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
 
             color = np.zeros(3)
 
-            # This is the main loop where each pixel color is computed.
-            # TODO
+            # Main loop for each pixel color computation
+            for depth in range(max_depth):
+                # Find the nearest intersection point with an object
+                hit_obj, t = ray.nearest_intersected_object(objects)
+                if hit_obj is None:
+                    break
 
-            
-            # We clip the values between 0 and 1 so all pixel values will make sense.
-            image[i, j] = np.clip(color,0,1)
+                hit_point = ray.origin + ray.direction * t
+                normal = hit_obj.normal_at(hit_point)
+                material = hit_obj.material
+
+                # Compute lighting at the intersection point
+                for light in lights:
+                    light_ray = light.get_light_ray(hit_point)
+                    in_shadow = False
+                    for obj in objects:
+                        if obj != hit_obj and obj.shadow_hit(light_ray):
+                            in_shadow = True
+                            break
+
+                    if not in_shadow:
+                        intensity = light.get_intensity(hit_point)
+                        # Diffuse component
+                        diffuse = max(np.dot(normalize(light_ray.direction), normal), 0)
+                        color += material.diffuse * intensity * diffuse
+
+                        # Specular component
+                        if diffuse > 0:
+                            reflect_dir = reflected(-light_ray.direction, normal)
+                            specular = max(np.dot(normalize(ray.direction), reflect_dir), 0) ** material.shininess
+                            color += material.specular * intensity * specular
+
+                # Reflection
+                reflect_ray = Ray(hit_point + 0.001 * normal, reflected(ray.direction, normal))
+                ray = reflect_ray
+
+            # Add ambient light
+            color += ambient
+
+            # Clamp color values to [0, 1]
+            color = np.clip(color, 0, 1)
+
+            image[i, j] = color
 
     return image
+
 
 
 # Write your own objects and lights
