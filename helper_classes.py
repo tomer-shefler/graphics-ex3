@@ -128,7 +128,7 @@ class Plane(Object3D):
         if t > 0:
             return t, self
         else:
-            raise Exception("fail")
+            return None
 
     def compute_normal(self, *args):
         return self.normal
@@ -173,22 +173,22 @@ class Triangle(Object3D):
     
     def intersect(self, ray: Ray):
         epsilon = 1e-6
-        ab = self.b - self.a
-        ac = self.c - self.a
-        pvec = np.cross(ray.direction, ac)
-        det = np.dot(ab, pvec)
+        a_b = self.b - self.a
+        a_c = self.c - self.a
+        p_vec = np.cross(ray.direction, a_c)
+        det = np.dot(a_b, p_vec)
         if abs(det) < epsilon:
-            raise Exception("fail")
+            return None
         inv_det = 1.0 / det
-        tvec = ray.origin - self.a
-        u = np.dot(tvec, pvec) * inv_det
+        t_vec = ray.origin - self.a
+        u = np.dot(t_vec, p_vec) * inv_det
         if u < 0 or u > 1:
-            raise Exception("fail")
-        qvec = np.cross(tvec, ab)
-        v = np.dot(ray.direction, qvec) * inv_det
+            return None
+        q_vec = np.cross(t_vec, a_b)
+        v = np.dot(ray.direction, q_vec) * inv_det
         if v < 0 or u + v > 1:
-            raise Exception("fail")
-        t = np.dot(ac, qvec) * inv_det
+            return None
+        t = np.dot(a_c, q_vec) * inv_det
         intersection_point = ray.origin + t * ray.direction
         normal_at_intersection = normalize(intersection_point - self.normal)
         return t, self, normal_at_intersection
@@ -268,8 +268,8 @@ class Sphere(Object3D):
             t1, t2 = self._find_roots(b, discriminant)
             if t1 >= 0 and t2 >= 0:
                 t = min(t1, t2)
-                intersection_point = ray.origin + t * ray.direction
-                normal_at_intersection = normalize(intersection_point - self.center)
+                intersection = ray.origin + t * ray.direction
+                normal_at_intersection = normalize(intersection - self.center)
                 return t, self, normal_at_intersection
 
         return np.inf, self, normalize(ray.origin - self.center)  # Return normalized direction if no intersection
