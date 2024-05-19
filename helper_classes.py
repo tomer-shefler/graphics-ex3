@@ -192,40 +192,6 @@ class Triangle(Object3D):
         intersection_point = ray.origin + t * ray.direction
         normal_at_intersection = normalize(intersection_point - self.normal)
         return t, self, normal_at_intersection
-        
-
-
-        # Calculate the intersection of the ray with the triangle
-        # Ray equation: origin + t * direction
-        # Triangle equation: a + u * (b - a) + v * (c - a)
-
-        # Calculate the direction vectors of the triangle
-        edge1 = self.b - self.a
-        edge2 = self.c - self.a
-
-        # Calculate the determinant of the system of equations
-        # This determinant represents the volume of the parallelepiped formed by the ray direction and the triangle edges
-        det = np.dot(ray.direction, np.cross(edge1, edge2))
-
-        # If the determinant is close to zero, the ray is parallel to the triangle plane
-        if abs(det) < 1e-6:
-            return None
-
-        # Calculate the coefficients of the linear equations
-        t = np.dot(self.a - ray.origin, np.cross(edge1, edge2)) / det
-        u = np.dot(ray.direction, np.cross(self.a - self.b, self.a - ray.origin)) / det
-        v = np.dot(ray.direction, np.cross(self.a - self.c, self.a - ray.origin)) / det
-
-        # Check if the intersection point lies within the triangle
-        if 0 <= u <= 1 and 0 <= v <= 1 and u + v <= 1:
-            # Intersection occurred
-            intersection_point = ray.origin + t * ray.direction
-            normal_at_intersection = normalize(intersection_point - self.normal)
-            return t, self, normal_at_intersection
-
-
-        # No intersection occurred
-        return None
 
 class Pyramid(Object3D):
     """     
