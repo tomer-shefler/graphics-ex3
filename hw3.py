@@ -40,8 +40,8 @@ def calculate_light_contribution(ambient_color, lights, p, normal_of_intersectio
         nearest_object_to_light, distance_of_nearease_object_to_light = ray_of_light.nearest_intersected_object(objects)
         if not nearest_object_to_light or distance_of_nearease_object_to_light >= min_distance:
             r = normalize(reflected(ray_of_light.direction, normal_of_intersection))
-            diffuse = nearest_object.calc_diffuse(light.get_intensity(p), normal_of_intersection, ray_of_light.direction)
-            specular = nearest_object.calc_specular(light.get_intensity(p), v, r)
+            diffuse = nearest_object.computeDiffuse(light.get_intensity(p), normal_of_intersection, ray_of_light.direction)
+            specular = nearest_object.computeSpecular(light.get_intensity(p), v, r)
             color += diffuse + specular
 
     return color
