@@ -1,4 +1,4 @@
-from helper_classes import Plane, PointLight, Sphere, DirectionalLight, Ray, normalize, reflected
+from helper_classes import Plane, PointLight, Sphere, DirectionalLight, Ray, normalize, reflected, Triangle
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -95,6 +95,22 @@ def your_own_scene():
     sphere2.set_material(ambient=[1, 0, 0], diffuse=[0, 4, 4], specular=[0.5, 0.5, 0.5], shininess=32, reflection=0)
     plane.set_material(ambient=[0, 1, 1], diffuse=[5, 5, 0], specular=[0.3, 0.3, 0.3], shininess=8, reflection=0.3)
 
-    objects = [sphere1, sphere2, plane]
+    v_list = np.array([[-1,0,-1],
+                    [1,0,-1],
+                    [0,1.5,-1.5]])
+
+    triangle = Triangle(*v_list)
+    triangle.set_material([1, 1, 1], [255,255,0], [1, 1, 1], 100, 0.5)
+
+
+    v_list2 = np.array([[-1,1,-1],
+                    [1,1,-1],
+                    [0,-0.5,-1.5]])
+
+    triangle2 = Triangle(*v_list2)
+    triangle2.set_material([1, 1, 1], [255,255,0], [1, 1, 1], 100, 0.5)
+
+
+    objects = [plane, triangle,triangle2]
     return camera, lights, objects
 
