@@ -134,7 +134,7 @@ class Plane(Object3D):
         if t > 0:
             return t, self
         else:
-            return None
+            raise Exception("fail")
 
     def compute_normal(self, *args):
         return self.normal
@@ -185,16 +185,16 @@ class Triangle(Object3D):
         pvec = np.cross(ray.direction, ac)
         det = np.dot(ab, pvec)
         if abs(det) < epsilon:
-            return None
+            raise Exception("fail")
         inv_det = 1.0 / det
         tvec = ray.origin - self.a
         u = np.dot(tvec, pvec) * inv_det
         if u < 0 or u > 1:
-            return None
+            raise Exception("fail")
         qvec = np.cross(tvec, ab)
         v = np.dot(ray.direction, qvec) * inv_det
         if v < 0 or u + v > 1:
-            return None
+            raise Exception("fail")
         t = np.dot(ac, qvec) * inv_det
         intersection_point = ray.origin + t * ray.direction
         normal_at_intersection = normalize(intersection_point - self.normal)
