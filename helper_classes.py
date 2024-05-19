@@ -63,11 +63,11 @@ class PointLight(LightSource):
 class SpotLight(LightSource):
     def __init__(self, intensity, position, direction, kc, kl, kq):
         super().__init__(intensity)
+        self.position = np.array(position)
+        self.direction = np.array(direction)
         self.constant_attenuation = kc
         self.linear_attenuation = kl
         self.quadratic_attenuation = kq
-        self.position = np.array(position)
-        self.direction = np.array(direction)
 
     # Returns the ray that goes from the light source to a given point
     def get_light_ray(self, intersection):
@@ -116,6 +116,12 @@ class Object3D:
         self.shininess = shininess
         self.reflection = reflection
 
+    def computeDiffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def computeSpecular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+
 
 class Plane(Object3D):
     def __init__(self, normal, point):
@@ -132,12 +138,13 @@ class Plane(Object3D):
 
     def compute_normal(self, *args):
         return self.normal
+    
+    def computeDiffuse(self, intensity, normal, ray_of_light):
+        return super().computeDiffuse(intensity, normal, ray_of_light)
 
-    def calc_diffuse(self, intensity, normal, ray_of_light):
-        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+    def computeSpecular(self, intensity, v, R):
+        return super().computeSpecular(intensity, v, R)
 
-    def calc_specular(self, intensity, v, R):
-        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
 
 
 class Triangle(Object3D):
@@ -165,11 +172,11 @@ class Triangle(Object3D):
         return normal
 
 
-    def calc_diffuse(self, intensity, normal, ray_of_light):
-        return intensity * self.diffuse * np.dot(normal, ray_of_light)
-    
-    def calc_specular(self, intensity, v, R):
-        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+    def computeDiffuse(self, intensity, normal, ray_of_light):
+        return super().computeDiffuse(intensity, normal, ray_of_light)
+
+    def computeSpecular(self, intensity, v, R):
+        return super().computeSpecular(intensity, v, R)
     
     def intersect(self, ray: Ray):
         epsilon = 1e-6
@@ -274,10 +281,10 @@ class Sphere(Object3D):
 
         return np.inf, self, normalize(ray.origin - self.center)  # Return normalized direction if no intersection
 
-    def calc_diffuse(self, intensity, normal, ray_of_light):
-        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+    def computeDiffuse(self, intensity, normal, ray_of_light):
+        return super().computeDiffuse(intensity, normal, ray_of_light)
 
-    def calc_specular(self, intensity, v, R):
-        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+    def computeSpecular(self, intensity, v, R):
+        return super().computeSpecular(intensity, v, R)
 
 
