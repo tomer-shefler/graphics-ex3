@@ -131,7 +131,8 @@ class Plane(Object3D):
 
     def intersect(self, ray: Ray):
         v = self.point - ray.origin
-        t = np.dot(v, self.normal) / (np.dot(self.normal, ray.direction) + 1e-6)
+        EPSILON = 1e-6
+        t = np.dot(v, self.normal) / (np.dot(self.normal, ray.direction) + EPSILON)
         if t > 0:
             return t, self
         else:
@@ -180,12 +181,12 @@ class Triangle(Object3D):
         return super().computeSpecular(intensity, v, R)
     
     def intersect(self, ray: Ray):
-        epsilon = 1e-6
+        EPSILON = 1e-6
         a_b = self.b - self.a
         a_c = self.c - self.a
         p_vec = np.cross(ray.direction, a_c)
         det = np.dot(a_b, p_vec)
-        if abs(det) < epsilon:
+        if abs(det) < EPSILON:
             return None
         inv_det = 1.0 / det
         t_vec = ray.origin - self.a
