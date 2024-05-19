@@ -273,14 +273,14 @@ class Sphere(Object3D):
         discriminant = self._calculate_discriminant(b, c)
 
         if discriminant > 0:
-            t1, t2 = self._find_roots(b, discriminant)
-            if t1 >= 0 and t2 >= 0:
-                t = min(t1, t2)
-                intersection = ray.origin + t * ray.direction
+            root1, root2 = self._find_roots(b, discriminant)
+            if root1 >= 0 and root2 >= 0:
+                minroot = min(root1, root2)
+                intersection = ray.origin + minroot * ray.direction
                 normal_at_intersection = normalize(intersection - self.center)
-                return t, self, normal_at_intersection
+                return minroot, self, normal_at_intersection
 
-        return np.inf, self, normalize(ray.origin - self.center)  # Return normalized direction if no intersection
+        return np.inf, self, normalize(ray.origin - self.center)
 
     def computeDiffuse(self, intensity, normal, ray_of_light):
         return super().computeDiffuse(intensity, normal, ray_of_light)
