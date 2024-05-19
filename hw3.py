@@ -1,4 +1,6 @@
-from helper_classes import *
+from helper_classes import Plane, PointLight, Sphere, DirectionalLight, Ray, normalize, reflected
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
@@ -12,9 +14,8 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
         for j, x in enumerate(np.linspace(screen[0], screen[2], width)):
             # screen is on origin
             pixel = np.array([x, y, 0])
-            origin = camera
-            direction = normalize(pixel - origin)
-            ray = Ray(origin, direction)
+            direction = normalize(pixel - camera)
+            ray = Ray(camera, direction)
 
             color = np.zeros(3)
             color = calculate_color(camera, ambient, lights, objects, ray, max_depth, 1)
@@ -75,10 +76,25 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
     return color
 
 
-# Write your own objects and lights
-# TODO
 def your_own_scene():
-    camera = np.array([0,0,1])
-    lights = []
-    objects = []
+    camera = np.array([0, 0, 1])
+
+    # Define lights
+    lights = [
+        PointLight(position=[5, 5, 5], intensity=np.array([0.8, 0.8, 1]), kc=0.1, kl=0.1, kq=0.1),
+        DirectionalLight(direction=[-1, -1, -1], intensity=np.array([0.2, 0.5, 1]))
+    ]
+
+    # Define objects
+    
+    sphere1 = Sphere([0, 0, -5], 1)
+    sphere2 = Sphere([-2, 1, -4], 1) 
+    plane = Plane(point=[0, -1, 0], normal=[0, 1, 0])  # Gray plane
+    
+    sphere1.set_material(ambient=[0, 1, 0], diffuse=[0, 4, 4], specular=[0.5, 0.5, 0.5], shininess=32, reflection=0.1)
+    sphere2.set_material(ambient=[1, 0, 0], diffuse=[0, 4, 4], specular=[0.5, 0.5, 0.5], shininess=32, reflection=0)
+    plane.set_material(ambient=[0, 1, 1], diffuse=[5, 5, 0], specular=[0.3, 0.3, 0.3], shininess=8, reflection=0.3)
+
+    objects = [sphere1, sphere2, plane]
     return camera, lights, objects
+
