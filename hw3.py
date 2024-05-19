@@ -17,53 +17,62 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             ray = Ray(origin, direction)
 
             color = np.zeros(3)
+            color = calculate_color(camera, ambient, lights, objects, ray, max_depth, 1)
 
-            # Main loop for each pixel color computation
-            for depth in range(max_depth):
-                # Find the nearest intersection point with an object
-                hit_obj, t = ray.nearest_intersected_object(objects)
-                if hit_obj is None:
-                    break
-
-                hit_point = ray.origin + ray.direction * t
-                normal = hit_obj.normal_at(hit_point)
-                material = hit_obj.material
-
-                # Compute lighting at the intersection point
-                for light in lights:
-                    light_ray = light.get_light_ray(hit_point)
-                    in_shadow = False
-                    for obj in objects:
-                        if obj != hit_obj and obj.shadow_hit(light_ray):
-                            in_shadow = True
-                            break
-
-                    if not in_shadow:
-                        intensity = light.get_intensity(hit_point)
-                        # Diffuse component
-                        diffuse = max(np.dot(normalize(light_ray.direction), normal), 0)
-                        color += material.diffuse * intensity * diffuse
-
-                        # Specular component
-                        if diffuse > 0:
-                            reflect_dir = reflected(-light_ray.direction, normal)
-                            specular = max(np.dot(normalize(ray.direction), reflect_dir), 0) ** material.shininess
-                            color += material.specular * intensity * specular
-
-                # Reflection
-                reflect_ray = Ray(hit_point + 0.001 * normal, reflected(ray.direction, normal))
-                ray = reflect_ray
-
-            # Add ambient light
-            color += ambient
-
-            # Clamp color values to [0, 1]
-            color = np.clip(color, 0, 1)
-
-            image[i, j] = color
+            # We clip the values between 0 and 1 so all pixel values will make sense.
+            image[i, j] = np.clip(color,0,1)
 
     return image
 
+
+def calculate_reflected_color(p, camera, ambient, lights, objects, ray, max_depth, level, normal_of_intersection, nearest_object):
+    kr = nearest_object.reflection
+    reflected_ray = Ray(p, normalize(reflected(ray.direction, normal_of_intersection)))
+    return kr * calculate_color(camera, ambient, lights, objects, reflected_ray, max_depth, level)
+
+
+def calculate_light_contribution(ambient_color, lights, p, normal_of_intersection, camera, objects, nearest_object, min_distance):
+    color = np.float64(ambient_color)
+    v = normalize(camera - p)
+    for light in lights:
+        ray_of_light = light.get_light_ray(p)
+        nearest_object_to_light, distance_of_nearease_object_to_light = ray_of_light.nearest_intersected_object(objects)
+        if not nearest_object_to_light or distance_of_nearease_object_to_light >= min_distance:
+            r = normalize(reflected(ray_of_light.direction, normal_of_intersection))
+            diffuse = nearest_object.calc_diffuse(light.get_intensity(p), normal_of_intersection, ray_of_light.direction)
+            specular = nearest_object.calc_specular(light.get_intensity(p), v, r)
+            color += diffuse + specular
+
+    return color
+
+
+def calculate_ambient_color(ambient, nearest_object):
+    return nearest_object.ambient * ambient
+
+
+def initialize_ray_trace(ray, nearest_object, min_distance):
+    intersection_p = ray.origin + (min_distance * ray.direction)
+    normal_of_intersection = nearest_object.compute_normal(intersection_p)
+    p = intersection_p + normal_of_intersection / (np.e ** 2)
+    return p, normal_of_intersection
+
+
+def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
+    if level > max_depth:
+        return np.zeros(3)
+    level += 1
+
+    nearest_object, min_distance = ray.nearest_intersected_object(objects)
+    if nearest_object is None:
+        return np.zeros(3)
+
+    p, normal_of_intersection = initialize_ray_trace(ray, nearest_object, min_distance)
+
+    ambient_color = calculate_ambient_color(ambient, nearest_object)
+    color = calculate_light_contribution(ambient_color, lights, p, normal_of_intersection, camera, objects, nearest_object, min_distance)
+    color += calculate_reflected_color(p, camera, ambient, lights, objects, ray, max_depth, level, normal_of_intersection, nearest_object)
+
+    return color
 
 
 # Write your own objects and lights
