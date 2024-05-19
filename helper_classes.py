@@ -57,7 +57,7 @@ class PointLight(LightSource):
     # This function returns the light intensity at a point
     def get_intensity(self, intersection):
         d = self.get_distance_from_light(intersection)
-        return self.intensity / (self.kc + self.kl*d + self.kq * (d**2))
+        return self.intensity / (self.kc + self.kl * d + self.kq * (d ** 2))
 
 
 class SpotLight(LightSource):
@@ -79,7 +79,7 @@ class SpotLight(LightSource):
     def get_intensity(self, intersection):
         unit_vector_to_intersection = normalize(intersection - self.position)
         distance = self.get_distance_from_light(intersection)
-        unit_light_direction = normalize(-self.direction)
+        unit_light_direction = normalize(-1 * self.direction)
         intensity_factor = np.dot(unit_vector_to_intersection, unit_light_direction)
         attenuation = self.constant_attenuation + self.linear_attenuation * distance + self.quadratic_attenuation * (
                     distance ** 2)
@@ -94,7 +94,6 @@ class Ray:
     # The function is getting the collection of objects in the scene and looks for the one with minimum distance.
     # The function should return the nearest object and its distance (in two different arguments)
     def nearest_intersected_object(self, objects):
-        intersections = None
         nearest_object = None
         min_distance = np.inf
         for obj in objects:
@@ -225,11 +224,11 @@ class Sphere(Object3D):
         return normalize(args[0] - self.center)
 
     def _calculate_discriminant(self, b, c):
-        return (b * b) - 4 * c
+        return (b * b) - (4 * c)
 
     def _find_roots(self, b, discriminant):
         sqrt_delta = np.sqrt(discriminant)
-        return (-b + sqrt_delta) / 2, (-b - sqrt_delta) / 2
+        return (-b + sqrt_delta) / 2, (-1 * b - sqrt_delta) / 2
 
     def intersect(self, ray):
         normal = ray.origin - self.center
